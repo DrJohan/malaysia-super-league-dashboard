@@ -115,26 +115,16 @@ function render(){
   const matches=state.matches;
   const completed=matches.filter(match=>match.status==="complete").sort((a,b)=>b.kickoff.localeCompare(a.kickoff));
   const live=matches.filter(match=>match.status==="live");
-  const upcoming=matches.filter(match=>match.status==="scheduled").sort((a,b)=>a.kickoff.localeCompare(b.kickoff));
-  const standings=calculateStandings(matches);
-  const clubs=new Set(matches.flatMap(match=>[match.home,match.away])).size;
+  const upcoming=matches.filter(match=>match.status==="scheduled"&&new Date(match.kickoff).getTime()>Date.now()-10800000).sort((a,b)=>a.kickoff.localeCompare(b.kickoff));
+  const standings=Array.isArray(state.standings)&&state.standings.length?state.standings:calculateStandings(matches);
   const goals=completed.reduce((sum,match)=>sum+(match.homeScore??0)+(match.awayScore??0),0);
+  const leaderLabel=completed.length?"League leader":"Season status";
+  const leaderValue=completed.length?(standings[0]?.team??"—"):(upcoming.length?"Opening round":"Pre-season");
   $("#season").textContent=state.season;
   $("#live-board").hidden=!live.length;
   $("#live-grid").innerHTML=live.map(liveCard).join("");
-  $("#metrics").innerHTML=isA1
-    ?`<article><span class="metric-icon">◉</span><div><small>Clubs listed</small><strong>${clubs}</strong></div></article><article><span class="metric-icon">▦</span><div><small>Results shown</small><strong>${completed.length}</strong></div></article><article><span class="metric-icon">⚽</span><div><small>Goals in results</small><strong>${goals}</strong></div></article><article><span class="metric-icon">◷</span><div><small>${live.length?"Live now":"Next kickoff"}</small><strong>${live.length?`${live.length} match${live.length>1?"es":""}`:upcoming[0]?escapeHtml(kickoff(upcoming[0].kickoff).date):"TBC"}</strong></div></article>`
-    :`<article><span class="metric-icon">⚽</span><div><small>League leader</small><strong>${escapeHtml(standings[0]?.team??"—")}</strong></div></article><article><span class="metric-icon">▦</span><div><small>Matches played</small><strong>${completed.length}</strong></div></article><article><span class="metric-icon">⚽</span><div><small>Goals scored</small><strong>${goals}</strong></div></article><article><span class="metric-icon">◷</span><div><small>${live.length?"Live now":"Next kickoff"}</small><strong>${live.length?`${live.length} match${live.length>1?"es":""}`:upcoming[0]?escapeHtml(kickoff(upcoming[0].kickoff).date):"TBC"}</strong></div></article>`;
-  const hasOfficialStandings=Boolean(state.standingsImage);
-  $("#official-standings").hidden=!hasOfficialStandings;
-  $("#standings-table").hidden=hasOfficialStandings;
-  $("#standings-legend").hidden=hasOfficialStandings;
-  if(hasOfficialStandings){
-    $("#official-standings-image").src=state.standingsImage;
-    $("#official-standings-link").href=state.standingsSourceImage??state.sourceUrl??state.standingsImage;
-  }else{
-    $("#standings").innerHTML=standings.map(row=>`<tr><td><span class="rank rank-${row.position}">${row.position}</span></td><td class="team-cell">${clubMark(row.team,row.logo)}<span>${escapeHtml(row.team)}</span></td><td>${row.played}</td><td>${row.won}</td><td>${row.drawn}</td><td>${row.lost}</td><td>${row.goalDifference>0?"+":""}${row.goalDifference}</td><td><strong>${row.points}</strong></td><td class="form-cell">${row.form.map(result=>`<span class="form form-${result.toLowerCase()}">${result}</span>`).join("")||"—"}</td></tr>`).join("");
-  }
+  $("#metrics").innerHTML=`<article><span class="metric-icon">⚽</span><div><small>${leaderLabel}</small><strong>${escapeHtml(leaderValue)}</strong></div></article><article><span class="metric-icon">▦</span><div><small>Matches played</small><strong>${completed.length}</strong></div></article><article><span class="metric-icon">⚽</span><div><small>Goals scored</small><strong>${goals}</strong></div></article><article><span class="metric-icon">◷</span><div><small>${live.length?"Live now":"Next kickoff"}</small><strong>${live.length?`${live.length} match${live.length>1?"es":""}`:upcoming[0]?escapeHtml(kickoff(upcoming[0].kickoff).date):"TBC"}</strong></div></article>`;
+  $("#standings").innerHTML=standings.map(row=>`<tr><td><span class="rank rank-${row.position}">${row.position}</span></td><td class="team-cell">${clubMark(row.team,row.logo)}<span>${escapeHtml(row.team)}</span></td><td>${row.played}</td><td>${row.won}</td><td>${row.drawn}</td><td>${row.lost}</td><td>${row.goalDifference>0?"+":""}${row.goalDifference}</td><td><strong>${row.points}</strong></td><td class="form-cell">${row.form.map(result=>`<span class="form form-${result.toLowerCase()}">${result}</span>`).join("")||"—"}</td></tr>`).join("");
   $("#results").innerHTML=completed.slice(0,4).map(matchCard).join("")||"<p class='notice'>No completed results yet.</p>";
   $("#fixtures").innerHTML=upcoming.slice(0,4).map(matchCard).join("")||"<p class='notice'>Fixtures will appear when announced.</p>";
   $("#updated").textContent=`Updated ${new Intl.DateTimeFormat("en-MY",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit",hour12:true,timeZone:"Asia/Kuala_Lumpur"}).format(new Date(state.updatedAt))} MYT · ${state.refreshNote??"Scores check every 30 seconds."}`;

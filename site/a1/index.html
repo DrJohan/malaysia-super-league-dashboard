@@ -23,7 +23,7 @@
   </header>
   <main class="dashboard">
     <section class="intro">
-      <div><p class="eyebrow"><i></i>Official AFL competition data</p><h1>Liga A1 Semi-Pro</h1><p>Official standings, latest results and the fixtures coming next.</p></div>
+      <div><p class="eyebrow"><i></i>Official AFL competition data</p><h1>Liga A1 Semi-Pro</h1><p>League standings, latest results and upcoming fixtures from official AFL data.</p></div>
       <div class="refresh-control"><span id="refresh-status" class="auto-status"><i></i>Loading official data…</span><button id="refresh" type="button" aria-label="Refresh data now">↻ <span>Refresh now</span></button></div>
     </section>
     <div id="notice" class="notice" hidden></div>
@@ -34,8 +34,7 @@
     <section id="metrics" class="metrics" aria-label="League summary"></section>
     <section class="content-grid">
       <article class="panel standings-panel">
-        <div class="panel-heading"><div><span>TABLE</span><h2>League standings</h2></div><p>Official AFL publication</p></div>
-        <div id="official-standings" class="official-standings" hidden><a id="official-standings-link" href="#" target="_blank" rel="noreferrer"><img id="official-standings-image" src="" alt="Official Liga A1 Semi-Pro standings"></a><p>Open the image to view the full-size official table.</p></div>
+        <div class="panel-heading"><div><span>TABLE</span><h2>League standings</h2></div><p>Calculated from official completed fixtures</p></div>
         <div id="standings-table" class="table-scroll"><table><thead><tr><th>#</th><th class="team-column">Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th class="form-column">Form</th></tr></thead><tbody id="standings"></tbody></table></div>
         <div id="standings-legend" class="legend"><span><i class="champion"></i>League leader</span></div>
       </article>

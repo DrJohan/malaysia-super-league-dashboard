@@ -3,14 +3,14 @@
 A static, mobile-friendly Malaysian football dashboard designed for GitHub Pages. It has separate match-centre pages for Liga Super and Liga A1 Semi-Pro.
 
 - Liga Super: standings, live scores, running match clock, recent results and upcoming fixtures from the official Malaysian Football League feed.
-- Liga A1 Semi-Pro: the official AFL standings publication, current-season results and upcoming fixtures from the Amateur Football League website.
+- Liga A1 Semi-Pro: an MSL-style league table calculated from official completed fixtures, plus current-season results and upcoming fixtures from the Amateur Football League website.
 
 ## How updates work
 
 - The browser checks the official schedule every 30 seconds for score and match-status changes.
 - GitHub Actions refreshes the full official snapshot and live-clock anchor every five minutes.
 - The visible match clock continues ticking between snapshots and re-synchronises at the next deployment.
-- The A1 page refreshes from the official AFL website every five minutes. A1 live clocks are shown only if a verified official feed becomes available.
+- The A1 page refreshes from the official AFL website every five minutes and retains earlier verified results from the deployed snapshot so its calculated table remains cumulative. A1 live clocks are shown only if a verified official feed becomes available.
 - Scheduled GitHub Actions runs may occasionally be delayed by GitHub; the page preserves the most recent verified snapshot.
 
 ## Enable GitHub Pages once
