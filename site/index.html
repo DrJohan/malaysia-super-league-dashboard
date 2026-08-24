@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#09110f">
+  <meta name="description" content="Latest Malaysia Super League standings, live scores, results and fixtures from the official MFL competition feed.">
+  <meta property="og:title" content="Malaysia Super League Match Centre">
+  <meta property="og:description" content="Live standings, scores, results and upcoming fixtures.">
+  <meta property="og:image" content="./og.png">
+  <title>Malaysia Super League Match Centre</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><img src="./msl-logo.png" alt="Liga Super official logo"><span><b>LIGA SUPER</b><small>Match Centre</small></span></div>
+    <div class="season"><span>Season</span><strong id="season">2026/27</strong></div>
+  </header>
+  <main class="dashboard">
+    <section class="intro">
+      <div><p class="eyebrow"><i></i>Official competition data</p><h1>Malaysia Super League</h1><p>Standings, live scores and the fixtures coming next.</p></div>
+      <div class="refresh-control"><span id="refresh-status" class="auto-status"><i></i>Loading official data…</span><button id="refresh" type="button" aria-label="Refresh data now">↻ <span>Refresh now</span></button></div>
+    </section>
+    <div id="notice" class="notice" hidden></div>
+    <section id="live-board" class="live-board" aria-label="Matches live now" hidden>
+      <div class="live-title"><span><i></i>LIVE NOW</span><p>Scores check every 30 seconds · Clock re-syncs every five minutes</p></div>
+      <div id="live-grid" class="live-grid"></div>
+    </section>
+    <section id="metrics" class="metrics" aria-label="League summary"></section>
+    <section class="content-grid">
+      <article class="panel standings-panel">
+        <div class="panel-heading"><div><span>TABLE</span><h2>League standings</h2></div><p>Calculated from official completed fixtures</p></div>
+        <div class="table-scroll"><table><thead><tr><th>#</th><th class="team-column">Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th class="form-column">Form</th></tr></thead><tbody id="standings"></tbody></table></div>
+        <div class="legend"><span><i class="champion"></i>AFC Champions League</span><span><i class="afc"></i>AFC competition</span></div>
+      </article>
+      <aside class="matches-column">
+        <section class="panel"><div class="panel-heading"><div><span>RESULTS</span><h2>Latest scores</h2></div></div><div id="results" class="match-list"></div></section>
+        <section class="panel"><div class="panel-heading"><div><span>NEXT UP</span><h2>Upcoming fixtures</h2></div></div><div id="fixtures" class="match-list"></div></section>
+      </aside>
+    </section>
+    <footer><p id="updated">Loading latest update…</p><a href="https://www.malaysianfootballleague.com/Home/Sport" target="_blank" rel="noreferrer">Source: Malaysian Football League ↗</a></footer>
+  </main>
+  <noscript><div class="noscript">JavaScript is required to load the latest competition data.</div></noscript>
+  <script src="./app.js" defer></script>
+</body>
+</html>
