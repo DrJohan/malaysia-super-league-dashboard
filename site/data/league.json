@@ -1,7 +1,31 @@
 {
   "season": "2026/27",
-  "updatedAt": "2026-08-24T02:20:37.034Z",
+  "updatedAt": "2026-08-24T03:15:12.881Z",
   "source": "Malaysian Football League",
+  "sourceUrl": "https://www.malaysianfootballleague.com/Home/Sport",
+  "news": [
+    {
+      "title": "PERLAWANAN UNIFI LIGA SUPER ANTARA NEGERI SEMBILAN FC DAN KL CITY FC TIDAK DAPAT DILANGSUNGKAN",
+      "excerpt": "Malaysian Football League (MFL) ingin memaklumkan bahawa perlawanan Unifi Liga Super (LS1) di antara Negeri Sembilan FC dan Kuala Lumpur City FC yang dijadualkan diadakan di Stadium Tuanku…",
+      "date": "2026-08-22T06:14:51.497Z",
+      "url": "https://www.malaysianfootballleague.com/Content/Post/Watch/6166",
+      "source": "MFL"
+    },
+    {
+      "title": "Astro Terus Bersama Liga Malaysia, Pacu Bola Sepak Tempatan",
+      "excerpt": "Astro hari ini mengumumkan kesinambungan peranannya sebagai penyiar rasmi Liga Malaysia bagi dua musim akan datang, membawakan perlawanan siaran langsung dalam definisi tinggi (HD)…",
+      "date": "2026-08-21T12:08:11.733Z",
+      "url": "https://www.malaysianfootballleague.com/Content/Post/Watch/6160",
+      "source": "MFL"
+    },
+    {
+      "title": "AHLI LEMBAGA PENGARAH LULUS TAMBAHAN KUOTA PEMAIN TEMPATAN BAGI SEMUA KELAB LIGA MALAYSIA 2026-2027",
+      "excerpt": "Malaysian Football League (MFL) hari ini mengumumkan keputusan Ahli Lembaga Pengarah MFL untuk meluluskan penambahan kuota pendaftaran pemain tempatan bagi semua kelab yang menyertai Liga…",
+      "date": "2026-08-21T07:01:58.830Z",
+      "url": "https://www.malaysianfootballleague.com/Content/Post/Watch/6155",
+      "source": "MFL"
+    }
+  ],
   "matches": [
     {
       "id": "403766",

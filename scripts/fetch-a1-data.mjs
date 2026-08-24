@@ -1,18 +1,25 @@
 import {mkdir,readFile,writeFile} from "node:fs/promises";
 
 const sourceUrl="https://the-afl.my/";
+const newsUrl="https://the-afl.my/wp-json/wp/v2/posts?per_page=6&_fields=date,link,title,excerpt";
 const deployedSnapshotUrl="https://drjohan.github.io/malaysia-super-league-dashboard/data/a1.json";
 const seasonStart="2026-08-28";
 const headers={Accept:"text/html,application/xhtml+xml", "User-Agent":"MYSL Match Centre GitHub Pages Dashboard/1.0"};
 const tableOrder=["AAK UNISEL FC","ARMED FORCES FC","BUNGA RAYA FC","IMIGRESEN FC II","JDT II","KEDAH FA","KELANTAN CITY FC","MANJUNG CITY FC","MALAYSIAN UNIVERSITY – UiTM","NEGERI SEMBILAN FC II","PERAK FA","SELANGOR FC II","UM – DAMANSARA UNITED","USM FC"];
 
 function decode(value=""){
-  return value
+  return String(value??"")
     .replace(/&#x([0-9a-f]+);/gi,(_,code)=>String.fromCodePoint(Number.parseInt(code,16)))
     .replace(/&#(\d+);/g,(_,code)=>String.fromCodePoint(Number(code)))
     .replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#039;/g,"'").replace(/&ndash;|&mdash;/g,"–").replace(/&nbsp;/g," ");
 }
-function clean(value=""){return decode(value.replace(/<[^>]+>/g," ")).replace(/\s+/g," ").trim()}
+function clean(value=""){return decode(String(value??"").replace(/<[^>]+>/g," ")).replace(/\s+/g," ").trim()}
+function snippet(value,maxLength=190){
+  const text=clean(value);
+  if(text.length<=maxLength) return text;
+  const shortened=text.slice(0,maxLength-1).replace(/\s+\S*$/,"").trim();
+  return `${shortened||text.slice(0,maxLength-1).trim()}…`;
+}
 function capture(block,pattern){return clean(block.match(pattern)?.[1]??"")}
 function imageFrom(block){return decode(block.match(/<img[^>]+src="([^"]+)"/i)?.[1]??"")}
 function slug(value){return value.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
@@ -96,6 +103,19 @@ function calculateStandings(matches){
   return [...table.values()].map(row=>({...row,goalDifference:row.goalsFor-row.goalsAgainst,form:row.form.slice(-5)})).sort((a,b)=>b.points-a.points||b.goalDifference-a.goalDifference||b.goalsFor-a.goalsFor||(order.get(a.team)??999)-(order.get(b.team)??999)||a.team.localeCompare(b.team)).map((row,index)=>({...row,position:index+1}));
 }
 
+async function fetchAflNews(){
+  const response=await fetch(newsUrl,{headers:{Accept:"application/json","User-Agent":"MYSL Match Centre GitHub Pages Dashboard/1.0"},signal:AbortSignal.timeout(15000)});
+  if(!response.ok) throw new Error(`AFL news returned ${response.status}`);
+  const posts=await response.json();
+  return (Array.isArray(posts)?posts:[]).filter(post=>post.link&&clean(post.title?.rendered)).slice(0,3).map(post=>({
+    title:clean(post.title.rendered),
+    excerpt:snippet(post.excerpt?.rendered),
+    date:new Date(`${post.date}+08:00`).toISOString(),
+    url:post.link,
+    source:"AFL"
+  }));
+}
+
 const response=await fetch(sourceUrl,{headers});
 if(!response.ok) throw new Error(`AFL website returned ${response.status}`);
 const html=await response.text();
@@ -111,7 +131,9 @@ for(const match of [...await previousMatches(),...fixtures,...results]){
 }
 const matches=[...matchesById.values()].sort((a,b)=>a.kickoff.localeCompare(b.kickoff));
 const standings=calculateStandings(matches);
+let news=[];
+try{news=await fetchAflNews()}catch(error){console.warn(`AFL news feed unavailable: ${error.message}`)}
 
 await mkdir(new URL("../site/data/",import.meta.url),{recursive:true});
-await writeFile(new URL("../site/data/a1.json",import.meta.url),JSON.stringify({season:"2026/27",updatedAt:new Date().toISOString(),source:"Amateur Football League",sourceUrl,refreshNote:"AFL results and standings refresh every five minutes when the official page changes.",standings,matches},null,2)+"\n");
-console.log(`Saved ${matches.length} cumulative A1 matches, ${matches.filter(match=>match.status==="complete").length} completed results and a ${standings.length}-club table.`);
+await writeFile(new URL("../site/data/a1.json",import.meta.url),JSON.stringify({season:"2026/27",updatedAt:new Date().toISOString(),source:"Amateur Football League",sourceUrl,refreshNote:"AFL results, standings and news refresh every five minutes when the official source changes.",standings,news,matches},null,2)+"\n");
+console.log(`Saved ${matches.length} cumulative A1 matches, ${matches.filter(match=>match.status==="complete").length} completed results, a ${standings.length}-club table and ${news.length} AFL news updates.`);

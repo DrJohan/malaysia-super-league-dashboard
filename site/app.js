@@ -70,6 +70,12 @@ function kickoff(value){
   };
 }
 
+function newsDate(value){
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime())) return "Latest update";
+  return new Intl.DateTimeFormat("en-MY",{day:"numeric",month:"short",year:"numeric",timeZone:"Asia/Kuala_Lumpur"}).format(date);
+}
+
 function periodLabel(period){
   return period===1?"1st half":period===2?"2nd half":period===3?"Extra time · 1st":period===4?"Extra time · 2nd":"In play";
 }
@@ -100,6 +106,10 @@ function matchCard(match){
   return `<article class="match-card"><div class="match-meta"><span>${escapeHtml(when.date)}</span><span class="status status-${escapeHtml(match.status)}">${escapeHtml(label)}</span></div><div class="match-team"><span>${clubMark(match.home,match.homeLogo)}${escapeHtml(match.home)}</span><strong>${score(match.homeScore)}</strong></div><div class="match-team"><span>${clubMark(match.away,match.awayLogo)}${escapeHtml(match.away)}</span><strong>${score(match.awayScore)}</strong></div><p class="venue">${escapeHtml(match.venue)}</p></article>`;
 }
 
+function newsCard(item){
+  return `<article class="news-card"><p class="news-meta"><span>${escapeHtml(newsDate(item.date))}</span><span>${escapeHtml(item.source??state.source??"Official")}</span></p><h3>${escapeHtml(item.title)}</h3><p class="news-snippet">${escapeHtml(item.excerpt)}</p><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Read at source <span aria-hidden="true">↗</span></a></article>`;
+}
+
 function renderClocks(){
   if(!state) return;
   for(const match of state.matches.filter(item=>item.status==="live")){
@@ -127,6 +137,8 @@ function render(){
   $("#standings").innerHTML=standings.map(row=>`<tr><td><span class="rank rank-${row.position}">${row.position}</span></td><td class="team-cell">${clubMark(row.team,row.logo)}<span>${escapeHtml(row.team)}</span></td><td>${row.played}</td><td>${row.won}</td><td>${row.drawn}</td><td>${row.lost}</td><td>${row.goalDifference>0?"+":""}${row.goalDifference}</td><td><strong>${row.points}</strong></td><td class="form-cell">${row.form.map(result=>`<span class="form form-${result.toLowerCase()}">${result}</span>`).join("")||"—"}</td></tr>`).join("");
   $("#results").innerHTML=completed.slice(0,4).map(matchCard).join("")||"<p class='notice'>No completed results yet.</p>";
   $("#fixtures").innerHTML=upcoming.slice(0,4).map(matchCard).join("")||"<p class='notice'>Fixtures will appear when announced.</p>";
+  const news=Array.isArray(state.news)?state.news:[];
+  $("#news").innerHTML=news.slice(0,3).map(newsCard).join("")||"<p class='news-empty'>No official league updates are available right now.</p>";
   $("#updated").textContent=`Updated ${new Intl.DateTimeFormat("en-MY",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit",hour12:true,timeZone:"Asia/Kuala_Lumpur"}).format(new Date(state.updatedAt))} MYT · ${state.refreshNote??"Scores check every 30 seconds."}`;
   $("#source-link").href=state.sourceUrl??$("#source-link").href;
   $("#source-link").textContent=`Source: ${state.source??"Official competition"} ↗`;

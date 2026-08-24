@@ -1,9 +1,9 @@
 {
   "season": "2026/27",
-  "updatedAt": "2026-08-24T02:46:16.776Z",
+  "updatedAt": "2026-08-24T03:15:17.770Z",
   "source": "Amateur Football League",
   "sourceUrl": "https://the-afl.my/",
-  "refreshNote": "AFL results and standings refresh every five minutes when the official page changes.",
+  "refreshNote": "AFL results, standings and news refresh every five minutes when the official source changes.",
   "standings": [
     {
       "team": "AAK UNISEL FC",
@@ -200,6 +200,29 @@
       "form": [],
       "goalDifference": 0,
       "position": 14
+    }
+  ],
+  "news": [
+    {
+      "title": "AAK UNISEL FC siap sedia harungi bahang Liga A1 Semi-Pro 2026/2027",
+      "excerpt": "AAK UNISEL FC meletakkan sasaran sekurang-kurangnya berada dalam kelompok tujuh terbaik pada penampilan sulung dalam saingan Liga A1 Semi-Pro 2026/2027. Sasaran ini bersandarkan persiapan…",
+      "date": "2026-08-19T22:24:18.000Z",
+      "url": "https://the-afl.my/aak-unisel-fc-siap-sedia-harungi-bahang-liga-a1-semi-pro-2026-2027/",
+      "source": "AFL"
+    },
+    {
+      "title": "Perak FA mahu lebih baik dari musim lalu",
+      "excerpt": "PERAK FA tekad meraih keputusan yang lebih baik pada penyertaan musim kedua Liga A1 Semi-Pro 2026/2027 yang bakal memulakan tirai saingan penghujung Ogos ini. Musim lalu , Perak FA…",
+      "date": "2026-08-18T20:56:33.000Z",
+      "url": "https://the-afl.my/perak-fa-mahu-lebih-baik-dari-musim-lalu/",
+      "source": "AFL"
+    },
+    {
+      "title": "USM FC tekad berikan saingan, enggan dilabel sebagai pelengkap perlawanan",
+      "excerpt": "Majoriti hampir 90 peratus pemain sedia ada dikekalkan dan saya ingin tegaskan bahawa kesemua pemain dalam pasukan adalah kakitangan USM dan pemain tempatan.",
+      "date": "2026-08-17T20:39:56.000Z",
+      "url": "https://the-afl.my/usm-fc-tekad-berikan-saingan-enggan-dilabel-sebagai-pelengkap-perlawanan/",
+      "source": "AFL"
     }
   ],
   "matches": [

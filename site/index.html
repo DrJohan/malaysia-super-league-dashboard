@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#09110f">
-  <meta name="description" content="Latest Malaysia Super League standings, live scores, results and fixtures from the official MFL competition feed.">
+  <meta name="description" content="Latest Malaysia Super League standings, live scores, results, fixtures and official league news updates.">
   <meta property="og:title" content="Malaysia Super League Match Centre">
-  <meta property="og:description" content="Live standings, scores, results and upcoming fixtures.">
+  <meta property="og:description" content="Live standings, scores, results, upcoming fixtures and official league updates.">
   <meta property="og:image" content="./og.png">
   <title>Malaysia Super League Match Centre</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
@@ -42,6 +42,10 @@
         <section class="panel"><div class="panel-heading"><div><span>RESULTS</span><h2>Latest scores</h2></div></div><div id="results" class="match-list"></div></section>
         <section class="panel"><div class="panel-heading"><div><span>NEXT UP</span><h2>Upcoming fixtures</h2></div></div><div id="fixtures" class="match-list"></div></section>
       </aside>
+    </section>
+    <section class="panel news-panel" aria-labelledby="news-heading">
+      <div class="panel-heading"><div><span>NEWS</span><h2 id="news-heading">Latest league updates</h2></div><p>Short updates from the official MFL source</p></div>
+      <div id="news" class="news-grid"></div>
     </section>
     <footer><p id="updated">Loading latest update…</p><a id="source-link" href="https://www.malaysianfootballleague.com/Home/Sport" target="_blank" rel="noreferrer">Source: Malaysian Football League ↗</a></footer>
   </main>
