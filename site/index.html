@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-competition="msl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -15,6 +15,10 @@
 <body>
   <header class="topbar">
     <div class="brand"><img src="./msl-logo.png" alt="Liga Super official logo"><span><b>LIGA SUPER</b><small>Match Centre</small></span></div>
+    <nav class="league-nav" aria-label="Competition">
+      <a class="active" href="./" aria-current="page">Liga Super</a>
+      <a href="./a1/">A1 League</a>
+    </nav>
     <div class="season"><span>Season</span><strong id="season">2026/27</strong></div>
   </header>
   <main class="dashboard">
@@ -31,15 +35,16 @@
     <section class="content-grid">
       <article class="panel standings-panel">
         <div class="panel-heading"><div><span>TABLE</span><h2>League standings</h2></div><p>Calculated from official completed fixtures</p></div>
-        <div class="table-scroll"><table><thead><tr><th>#</th><th class="team-column">Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th class="form-column">Form</th></tr></thead><tbody id="standings"></tbody></table></div>
-        <div class="legend"><span><i class="champion"></i>AFC Champions League</span><span><i class="afc"></i>AFC competition</span></div>
+        <div id="official-standings" class="official-standings" hidden><a id="official-standings-link" href="#" target="_blank" rel="noreferrer"><img id="official-standings-image" src="" alt="Official league standings"></a><p>Official table published by the competition organiser.</p></div>
+        <div id="standings-table" class="table-scroll"><table><thead><tr><th>#</th><th class="team-column">Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th class="form-column">Form</th></tr></thead><tbody id="standings"></tbody></table></div>
+        <div id="standings-legend" class="legend"><span><i class="champion"></i>AFC Champions League</span><span><i class="afc"></i>AFC competition</span></div>
       </article>
       <aside class="matches-column">
         <section class="panel"><div class="panel-heading"><div><span>RESULTS</span><h2>Latest scores</h2></div></div><div id="results" class="match-list"></div></section>
         <section class="panel"><div class="panel-heading"><div><span>NEXT UP</span><h2>Upcoming fixtures</h2></div></div><div id="fixtures" class="match-list"></div></section>
       </aside>
     </section>
-    <footer><p id="updated">Loading latest update…</p><a href="https://www.malaysianfootballleague.com/Home/Sport" target="_blank" rel="noreferrer">Source: Malaysian Football League ↗</a></footer>
+    <footer><p id="updated">Loading latest update…</p><a id="source-link" href="https://www.malaysianfootballleague.com/Home/Sport" target="_blank" rel="noreferrer">Source: Malaysian Football League ↗</a></footer>
   </main>
   <noscript><div class="noscript">JavaScript is required to load the latest competition data.</div></noscript>
   <script src="./app.js" defer></script>

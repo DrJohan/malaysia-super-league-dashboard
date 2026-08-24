@@ -1,7 +1,10 @@
-const SCHEDULE_URL="https://hosted.dcd.shared.geniussports.com/embednf/MFL/en/competition/2393/schedule?phaseName=&poolNumber=0&matchType=REGULAR&roundNumber=-1&_cc=1&_nv=1&_mf=1";
-const DATA_URL="./data/league.json";
+const competition=document.documentElement.dataset.competition??"msl";
+const isA1=competition==="a1";
+const SCHEDULE_URL=isA1?null:"https://hosted.dcd.shared.geniussports.com/embednf/MFL/en/competition/2393/schedule?phaseName=&poolNumber=0&matchType=REGULAR&roundNumber=-1&_cc=1&_nv=1&_mf=1";
+const DATA_URL=isA1?"../data/a1.json":"./data/league.json";
+const REFRESH_MS=isA1?300000:30000;
 let state=null;
-let nextRefresh=Date.now()+30000;
+let nextRefresh=Date.now()+REFRESH_MS;
 
 const $=selector=>document.querySelector(selector);
 const escapeHtml=value=>String(value??"").replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
@@ -114,15 +117,29 @@ function render(){
   const live=matches.filter(match=>match.status==="live");
   const upcoming=matches.filter(match=>match.status==="scheduled").sort((a,b)=>a.kickoff.localeCompare(b.kickoff));
   const standings=calculateStandings(matches);
+  const clubs=new Set(matches.flatMap(match=>[match.home,match.away])).size;
   const goals=completed.reduce((sum,match)=>sum+(match.homeScore??0)+(match.awayScore??0),0);
   $("#season").textContent=state.season;
   $("#live-board").hidden=!live.length;
   $("#live-grid").innerHTML=live.map(liveCard).join("");
-  $("#metrics").innerHTML=`<article><span class="metric-icon">⚽</span><div><small>League leader</small><strong>${escapeHtml(standings[0]?.team??"—")}</strong></div></article><article><span class="metric-icon">▦</span><div><small>Matches played</small><strong>${completed.length}</strong></div></article><article><span class="metric-icon">⚽</span><div><small>Goals scored</small><strong>${goals}</strong></div></article><article><span class="metric-icon">◷</span><div><small>${live.length?"Live now":"Next kickoff"}</small><strong>${live.length?`${live.length} match${live.length>1?"es":""}`:upcoming[0]?escapeHtml(kickoff(upcoming[0].kickoff).date):"TBC"}</strong></div></article>`;
-  $("#standings").innerHTML=standings.map(row=>`<tr><td><span class="rank rank-${row.position}">${row.position}</span></td><td class="team-cell">${clubMark(row.team,row.logo)}<span>${escapeHtml(row.team)}</span></td><td>${row.played}</td><td>${row.won}</td><td>${row.drawn}</td><td>${row.lost}</td><td>${row.goalDifference>0?"+":""}${row.goalDifference}</td><td><strong>${row.points}</strong></td><td class="form-cell">${row.form.map(result=>`<span class="form form-${result.toLowerCase()}">${result}</span>`).join("")||"—"}</td></tr>`).join("");
+  $("#metrics").innerHTML=isA1
+    ?`<article><span class="metric-icon">◉</span><div><small>Clubs listed</small><strong>${clubs}</strong></div></article><article><span class="metric-icon">▦</span><div><small>Results shown</small><strong>${completed.length}</strong></div></article><article><span class="metric-icon">⚽</span><div><small>Goals in results</small><strong>${goals}</strong></div></article><article><span class="metric-icon">◷</span><div><small>${live.length?"Live now":"Next kickoff"}</small><strong>${live.length?`${live.length} match${live.length>1?"es":""}`:upcoming[0]?escapeHtml(kickoff(upcoming[0].kickoff).date):"TBC"}</strong></div></article>`
+    :`<article><span class="metric-icon">⚽</span><div><small>League leader</small><strong>${escapeHtml(standings[0]?.team??"—")}</strong></div></article><article><span class="metric-icon">▦</span><div><small>Matches played</small><strong>${completed.length}</strong></div></article><article><span class="metric-icon">⚽</span><div><small>Goals scored</small><strong>${goals}</strong></div></article><article><span class="metric-icon">◷</span><div><small>${live.length?"Live now":"Next kickoff"}</small><strong>${live.length?`${live.length} match${live.length>1?"es":""}`:upcoming[0]?escapeHtml(kickoff(upcoming[0].kickoff).date):"TBC"}</strong></div></article>`;
+  const hasOfficialStandings=Boolean(state.standingsImage);
+  $("#official-standings").hidden=!hasOfficialStandings;
+  $("#standings-table").hidden=hasOfficialStandings;
+  $("#standings-legend").hidden=hasOfficialStandings;
+  if(hasOfficialStandings){
+    $("#official-standings-image").src=state.standingsImage;
+    $("#official-standings-link").href=state.standingsSourceImage??state.sourceUrl??state.standingsImage;
+  }else{
+    $("#standings").innerHTML=standings.map(row=>`<tr><td><span class="rank rank-${row.position}">${row.position}</span></td><td class="team-cell">${clubMark(row.team,row.logo)}<span>${escapeHtml(row.team)}</span></td><td>${row.played}</td><td>${row.won}</td><td>${row.drawn}</td><td>${row.lost}</td><td>${row.goalDifference>0?"+":""}${row.goalDifference}</td><td><strong>${row.points}</strong></td><td class="form-cell">${row.form.map(result=>`<span class="form form-${result.toLowerCase()}">${result}</span>`).join("")||"—"}</td></tr>`).join("");
+  }
   $("#results").innerHTML=completed.slice(0,4).map(matchCard).join("")||"<p class='notice'>No completed results yet.</p>";
   $("#fixtures").innerHTML=upcoming.slice(0,4).map(matchCard).join("")||"<p class='notice'>Fixtures will appear when announced.</p>";
-  $("#updated").textContent=`Updated ${new Intl.DateTimeFormat("en-MY",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit",hour12:true,timeZone:"Asia/Kuala_Lumpur"}).format(new Date(state.updatedAt))} MYT · Scores check every 30 seconds.`;
+  $("#updated").textContent=`Updated ${new Intl.DateTimeFormat("en-MY",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit",hour12:true,timeZone:"Asia/Kuala_Lumpur"}).format(new Date(state.updatedAt))} MYT · ${state.refreshNote??"Scores check every 30 seconds."}`;
+  $("#source-link").href=state.sourceUrl??$("#source-link").href;
+  $("#source-link").textContent=`Source: ${state.source??"Official competition"} ↗`;
   $("#refresh-status").classList.toggle("is-live",live.length>0);
   renderClocks();
 }
@@ -130,20 +147,19 @@ function render(){
 async function refresh(silent=false){
   if(!silent) $("#refresh-status").innerHTML="<i></i>Checking official data…";
   try{
-    const [snapshot,schedule]=await Promise.allSettled([
-      fetch(`${DATA_URL}?v=${Date.now()}`,{cache:"no-store"}).then(response=>{if(!response.ok) throw new Error("Snapshot unavailable");return response.json()}),
-      fetch(`${SCHEDULE_URL}&_=${Date.now()}`,{cache:"no-store"}).then(response=>{if(!response.ok) throw new Error("MFL unavailable");return response.json()})
-    ]);
+    const requests=[fetch(`${DATA_URL}?v=${Date.now()}`,{cache:"no-store"}).then(response=>{if(!response.ok) throw new Error("Snapshot unavailable");return response.json()})];
+    if(SCHEDULE_URL) requests.push(fetch(`${SCHEDULE_URL}&_=${Date.now()}`,{cache:"no-store"}).then(response=>{if(!response.ok) throw new Error("MFL unavailable");return response.json()}));
+    const [snapshot,schedule]=await Promise.allSettled(requests);
     if(snapshot.status==="fulfilled"&&(!state||new Date(snapshot.value.updatedAt)>=new Date(state.updatedAt))) state=snapshot.value;
     if(!state) throw new Error("No verified data is available yet");
-    if(schedule.status==="fulfilled") state={...state,matches:mergeSchedule(state.matches,parseOfficialSchedule(schedule.value))};
+    if(schedule?.status==="fulfilled") state={...state,matches:mergeSchedule(state.matches,parseOfficialSchedule(schedule.value))};
     $("#notice").hidden=true;
     render();
   }catch(error){
     $("#notice").hidden=false;
     $("#notice").textContent=state?"The official feed is temporarily unavailable. Showing the last verified snapshot.":error.message;
   }
-  nextRefresh=Date.now()+30000;
+  nextRefresh=Date.now()+REFRESH_MS;
 }
 
 $("#refresh").addEventListener("click",()=>refresh());
@@ -151,6 +167,10 @@ setInterval(()=>{
   renderClocks();
   const remaining=Math.max(0,Math.ceil((nextRefresh-Date.now())/1000));
   if(remaining===0){refresh(true);return}
-  if(state){const live=state.matches.some(match=>match.status==="live");$("#refresh-status").innerHTML=`<i></i>${live?"Live update":"Auto-refresh"} in 0:${String(remaining).padStart(2,"0")}`}
+  if(state){
+    const live=state.matches.some(match=>match.status==="live");
+    const minutes=Math.floor(remaining/60),seconds=remaining%60;
+    $("#refresh-status").innerHTML=`<i></i>${live?"Live update":"Auto-refresh"} in ${minutes}:${String(seconds).padStart(2,"0")}`;
+  }
 },1000);
 refresh();

@@ -1,12 +1,16 @@
 # Malaysia Super League Match Centre
 
-A static, mobile-friendly Malaysia Super League dashboard designed for GitHub Pages. It displays standings, live scores, the running match clock, recent results and upcoming fixtures using the official Malaysian Football League competition feed.
+A static, mobile-friendly Malaysian football dashboard designed for GitHub Pages. It has separate match-centre pages for Liga Super and Liga A1 Semi-Pro.
+
+- Liga Super: standings, live scores, running match clock, recent results and upcoming fixtures from the official Malaysian Football League feed.
+- Liga A1 Semi-Pro: the official AFL standings publication, current-season results and upcoming fixtures from the Amateur Football League website.
 
 ## How updates work
 
 - The browser checks the official schedule every 30 seconds for score and match-status changes.
 - GitHub Actions refreshes the full official snapshot and live-clock anchor every five minutes.
 - The visible match clock continues ticking between snapshots and re-synchronises at the next deployment.
+- The A1 page refreshes from the official AFL website every five minutes. A1 live clocks are shown only if a verified official feed becomes available.
 - Scheduled GitHub Actions runs may occasionally be delayed by GitHub; the page preserves the most recent verified snapshot.
 
 ## Enable GitHub Pages once
@@ -19,6 +23,10 @@ The expected address is:
 
 `https://drjohan.github.io/malaysia-super-league-dashboard/`
 
+The A1 page is:
+
+`https://drjohan.github.io/malaysia-super-league-dashboard/a1/`
+
 ## Data source
 
-Competition data is retrieved from the Malaysian Football League's official Genius Sports-powered schedule and live-data feeds. This independent dashboard is not affiliated with or endorsed by MFL.
+Liga Super data is retrieved from the Malaysian Football League's official Genius Sports-powered schedule and live-data feeds. Liga A1 data is retrieved from the official Amateur Football League website. This independent dashboard is not affiliated with or endorsed by MFL or AFL.

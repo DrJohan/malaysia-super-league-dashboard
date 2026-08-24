@@ -1,0 +1,95 @@
+{
+  "season": "2026/27",
+  "updatedAt": "2026-08-24T02:20:15.737Z",
+  "source": "Amateur Football League",
+  "sourceUrl": "https://the-afl.my/",
+  "refreshNote": "AFL data refreshes every five minutes when the official page changes.",
+  "standingsImage": "../data/a1-standings.jpg",
+  "standingsSourceImage": "https://the-afl.my/wp-content/uploads/2026/08/STANDING_M0.jpg-819x1024.jpeg",
+  "matches": [
+    {
+      "id": "a1-jdt-ii-usm-fc-2026-08-28",
+      "status": "scheduled",
+      "kickoff": "2026-08-28T12:45:00.000Z",
+      "venue": "Stadium Tan Sri Dato' Haji Hassan Yunos, Larkin",
+      "home": "JDT II",
+      "away": "USM FC",
+      "homeScore": null,
+      "awayScore": null,
+      "homeLogo": "https://the-afl.my/wp-content/uploads/2025/07/LOGO-TEAM-JDT-II.png",
+      "awayLogo": "https://the-afl.my/wp-content/uploads/2025/09/A2__USM-FC.png"
+    },
+    {
+      "id": "a1-um-damansara-united-selangor-fc-ii-2026-08-29",
+      "status": "scheduled",
+      "kickoff": "2026-08-29T08:45:00.000Z",
+      "venue": "Stadium UM Arena, Kuala Lumpur",
+      "home": "UM – DAMANSARA UNITED",
+      "away": "SELANGOR FC II",
+      "homeScore": null,
+      "awayScore": null,
+      "homeLogo": "https://the-afl.my/wp-content/uploads/2024/07/LOGO-TEAM-UM-DAMANSARA-UNITED.png",
+      "awayLogo": "https://the-afl.my/wp-content/uploads/2025/07/LOGO-TEAM-SELANGOR-II.png"
+    },
+    {
+      "id": "a1-perak-fa-negeri-sembilan-fc-ii-2026-08-29",
+      "status": "scheduled",
+      "kickoff": "2026-08-29T08:45:00.000Z",
+      "venue": "Stadium UM Arena, Kuala Lumpur",
+      "home": "PERAK FA",
+      "away": "NEGERI SEMBILAN FC II",
+      "homeScore": null,
+      "awayScore": null,
+      "homeLogo": "https://the-afl.my/wp-content/uploads/2025/07/LOGO-TEAM-PERAK-FA.png",
+      "awayLogo": "https://the-afl.my/wp-content/uploads/2026/08/LOGO__NEGERI-SEMBILAN-FC-II.png"
+    },
+    {
+      "id": "a1-malaysian-university-uitm-kelantan-city-fc-2026-08-29",
+      "status": "scheduled",
+      "kickoff": "2026-08-29T08:45:00.000Z",
+      "venue": "Stadium UiTM, Shah Alam.",
+      "home": "MALAYSIAN UNIVERSITY – UiTM",
+      "away": "KELANTAN CITY FC",
+      "homeScore": null,
+      "awayScore": null,
+      "homeLogo": "https://the-afl.my/wp-content/uploads/2020/10/LOGO-TEAM-MALAYSIAN-UNIVERSITY.png",
+      "awayLogo": "https://the-afl.my/wp-content/uploads/2024/07/LOGO__KELANTAN-CITY-FC.png"
+    },
+    {
+      "id": "a1-kedah-fa-imigresen-fc-ii-2026-08-29",
+      "status": "scheduled",
+      "kickoff": "2026-08-29T12:45:00.000Z",
+      "venue": "Stadium Darul Aman, Alor Setar",
+      "home": "KEDAH FA",
+      "away": "IMIGRESEN FC II",
+      "homeScore": null,
+      "awayScore": null,
+      "homeLogo": "https://the-afl.my/wp-content/uploads/2025/07/LOGO-TEAM-KEDAH-FA.png",
+      "awayLogo": "https://the-afl.my/wp-content/uploads/2019/04/M3-TEAMS-05.png"
+    },
+    {
+      "id": "a1-bunga-raya-fc-aak-unisel-fc-2026-08-30",
+      "status": "scheduled",
+      "kickoff": "2026-08-30T08:45:00.000Z",
+      "venue": "Stadium Darul Aman, Alor Setar",
+      "home": "BUNGA RAYA FC",
+      "away": "AAK UNISEL FC",
+      "homeScore": null,
+      "awayScore": null,
+      "homeLogo": "https://the-afl.my/wp-content/uploads/2025/07/LOGO-TEAM-BUNGA-RAYA-FC.png",
+      "awayLogo": "https://the-afl.my/wp-content/uploads/2025/09/LOGO_AAK-UNISEL-FC.png"
+    },
+    {
+      "id": "a1-manjung-city-fc-armed-forces-fc-2026-08-30",
+      "status": "scheduled",
+      "kickoff": "2026-08-30T12:45:00.000Z",
+      "venue": "Stadium Darul Aman, Alor Setar",
+      "home": "MANJUNG CITY FC",
+      "away": "ARMED FORCES FC",
+      "homeScore": null,
+      "awayScore": null,
+      "homeLogo": "https://the-afl.my/wp-content/uploads/2019/04/LOGO-TEAM-MANJUNG-CITY-FC.png",
+      "awayLogo": "https://the-afl.my/wp-content/uploads/2019/04/M3-TEAMS-01.png"
+    }
+  ]
+}
