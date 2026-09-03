@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en" data-competition="facup">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#120914">
+  <meta name="description" content="Latest Malaysia FA Cup live scores, knockout progress, results, fixtures and official MFL news updates.">
+  <meta property="og:title" content="Malaysia FA Cup Match Centre">
+  <meta property="og:description" content="Live scores, knockout progress, results, upcoming ties and official MFL updates.">
+  <meta property="og:image" content="../og.png">
+  <title>Malaysia FA Cup Match Centre</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="cup-brand-mark" aria-hidden="true">🏆</span><span><b>PIALA FA</b><small>Malaysia Match Centre</small></span></div>
+    <nav class="league-nav" aria-label="Competition">
+      <a href="../">Liga Super</a>
+      <a class="active" href="./" aria-current="page">FA Cup</a>
+      <a href="../a1/">A1 League</a>
+    </nav>
+    <div class="season"><span>Season</span><strong id="season">2026/27</strong></div>
+  </header>
+  <main class="dashboard">
+    <section class="intro">
+      <div><p class="eyebrow"><i></i>Official MFL competition data</p><h1>Malaysia FA Cup</h1><p>Every knockout tie, live score and result on the road to the final.</p></div>
+      <div class="refresh-control"><span id="refresh-status" class="auto-status"><i></i>Loading official data…</span><button id="refresh" type="button" aria-label="Refresh data now">↻ <span>Refresh now</span></button></div>
+    </section>
+    <div id="notice" class="notice" hidden></div>
+    <section id="live-board" class="live-board" aria-label="Matches live now" hidden>
+      <div class="live-title"><span><i></i>LIVE NOW</span><p>Scores check every 30 seconds · Clock re-syncs every five minutes</p></div>
+      <div id="live-grid" class="live-grid"></div>
+    </section>
+    <section id="metrics" class="metrics" aria-label="Cup summary"></section>
+    <section class="content-grid">
+      <article class="panel cup-progress-panel">
+        <div class="panel-heading"><div><span>KNOCKOUT</span><h2>Tournament path</h2></div><p>Round of 16 to the final</p></div>
+        <div id="cup-rounds" class="cup-rounds"></div>
+      </article>
+      <aside class="matches-column">
+        <section class="panel"><div class="panel-heading"><div><span>RESULTS</span><h2>Latest scores</h2></div></div><div id="results" class="match-list"></div></section>
+        <section class="panel"><div class="panel-heading"><div><span>NEXT UP</span><h2>Upcoming ties</h2></div></div><div id="fixtures" class="match-list"></div></section>
+      </aside>
+    </section>
+    <section class="panel news-panel" aria-labelledby="news-heading">
+      <div class="panel-heading"><div><span>NEWS</span><h2 id="news-heading">Latest FA Cup updates</h2></div><p>Short updates from the official MFL source</p></div>
+      <div id="news" class="news-grid"></div>
+    </section>
+    <footer><p id="updated">Loading latest update…</p><a id="source-link" href="https://www.malaysianfootballleague.com/Home/Sport?WHurl=%2Fcompetition%2F2394%2Fschedule" target="_blank" rel="noreferrer">Source: Malaysian Football League ↗</a></footer>
+  </main>
+  <noscript><div class="noscript">JavaScript is required to load the latest competition data.</div></noscript>
+  <script src="../app.js" defer></script>
+</body>
+</html>

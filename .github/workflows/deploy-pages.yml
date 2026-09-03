@@ -26,7 +26,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-      - name: Fetch official league data
+      - name: Fetch official competition data
         run: |
           node scripts/fetch-data.mjs
           node scripts/fetch-a1-data.mjs

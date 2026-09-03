@@ -1,7 +1,13 @@
 const competition=document.documentElement.dataset.competition??"msl";
+const competitionConfig={
+  msl:{dataUrl:"./data/league.json",mflCompetitionId:2393},
+  a1:{dataUrl:"../data/a1.json"},
+  facup:{dataUrl:"../data/fa-cup.json",mflCompetitionId:2394}
+}[competition]??{dataUrl:"./data/league.json",mflCompetitionId:2393};
 const isA1=competition==="a1";
-const SCHEDULE_URL=isA1?null:"https://hosted.dcd.shared.geniussports.com/embednf/MFL/en/competition/2393/schedule?phaseName=&poolNumber=0&matchType=REGULAR&roundNumber=-1&_cc=1&_nv=1&_mf=1";
-const DATA_URL=isA1?"../data/a1.json":"./data/league.json";
+const isFaCup=competition==="facup";
+const SCHEDULE_URL=competitionConfig.mflCompetitionId?`https://hosted.dcd.shared.geniussports.com/embednf/MFL/en/competition/${competitionConfig.mflCompetitionId}/schedule?phaseName=&poolNumber=0&matchType=REGULAR&roundNumber=-1&_cc=1&_nv=1&_mf=1`:null;
+const DATA_URL=competitionConfig.dataUrl;
 const SOFA_BASES=["https://www.sofascore.com/api/v1","https://api.sofascore.com/api/v1"];
 const SOFA_TOURNAMENT=22740;
 const SOFA_SEASON=100870;
@@ -182,6 +188,38 @@ function matchCard(match){
   return `<article class="match-card"><div class="match-meta"><span>${escapeHtml(when.date)}</span><span class="status status-${escapeHtml(match.status)}">${escapeHtml(label)}</span></div><div class="match-team"><span>${clubMark(match.home,match.homeLogo)}${escapeHtml(match.home)}</span><strong>${score(match.homeScore)}</strong></div><div class="match-team"><span>${clubMark(match.away,match.awayLogo)}${escapeHtml(match.away)}</span><strong>${score(match.awayScore)}</strong></div><p class="venue">${escapeHtml(match.venue)}</p></article>`;
 }
 
+const CUP_STAGES=[
+  {name:"Round of 16",matches:16,detail:"8 ties · two legs"},
+  {name:"Quarter-finals",matches:8,detail:"4 ties · two legs"},
+  {name:"Semi-finals",matches:4,detail:"2 ties · two legs"},
+  {name:"Final",matches:1,detail:"One-match final"}
+];
+
+function currentCupStage(matches){
+  const completed=matches.filter(match=>match.status==="complete").length;
+  let finish=0;
+  const current=CUP_STAGES.findIndex(stage=>{finish+=stage.matches;return completed<finish});
+  return current<0?CUP_STAGES.length-1:current;
+}
+
+function renderCupProgress(matches){
+  const current=currentCupStage(matches);
+  const completedMatches=matches.filter(match=>match.status==="complete").length;
+  const live=matches.some(match=>match.status==="live");
+  let start=0;
+  return CUP_STAGES.map((stage,index)=>{
+    const completed=Math.min(stage.matches,Math.max(0,completedMatches-start));
+    const known=Math.min(stage.matches,Math.max(0,matches.length-start));
+    const complete=completed===stage.matches;
+    const stateClass=complete?"is-complete":index===current?"is-current":"is-upcoming";
+    const status=complete?"Complete":live&&index===current?"Live now":index===current?"In progress":"Upcoming";
+    const detail=known?`${completed} of ${stage.matches} matches complete`:stage.detail;
+    const card=`<article class="cup-stage ${stateClass}"><div class="cup-stage-top"><span>0${index+1}</span><b>${escapeHtml(status)}</b></div><h3>${escapeHtml(stage.name)}</h3><div class="cup-stage-track"><i style="width:${Math.min(100,completed/stage.matches*100)}%"></i></div><p>${escapeHtml(detail)}</p></article>`;
+    start+=stage.matches;
+    return card;
+  }).join("");
+}
+
 function newsCard(item){
   return `<article class="news-card"><p class="news-meta"><span>${escapeHtml(newsDate(item.date))}</span><span>${escapeHtml(item.source??state.source??"Official")}</span></p><h3>${escapeHtml(item.title)}</h3><p class="news-snippet">${escapeHtml(item.excerpt)}</p><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">Read at source <span aria-hidden="true">↗</span></a></article>`;
 }
@@ -202,19 +240,26 @@ function render(){
   const completed=matches.filter(match=>match.status==="complete").sort((a,b)=>b.kickoff.localeCompare(a.kickoff));
   const live=matches.filter(match=>match.status==="live");
   const upcoming=matches.filter(match=>match.status==="scheduled"&&new Date(match.kickoff).getTime()>Date.now()-10800000).sort((a,b)=>a.kickoff.localeCompare(b.kickoff));
-  const standings=Array.isArray(state.standings)&&state.standings.length?state.standings:calculateStandings(matches);
   const goals=completed.reduce((sum,match)=>sum+(match.homeScore??0)+(match.awayScore??0),0);
-  const leaderLabel=completed.length?"League leader":"Season status";
-  const leaderValue=completed.length?(standings[0]?.team??"—"):(upcoming.length?"Opening round":"Pre-season");
   $("#season").textContent=state.season;
   $("#live-board").hidden=!live.length;
   $("#live-grid").innerHTML=live.map(liveCard).join("");
-  $("#metrics").innerHTML=`<article><span class="metric-icon">⚽</span><div><small>${leaderLabel}</small><strong>${escapeHtml(leaderValue)}</strong></div></article><article><span class="metric-icon">▦</span><div><small>Matches played</small><strong>${completed.length}</strong></div></article><article><span class="metric-icon">⚽</span><div><small>Goals scored</small><strong>${goals}</strong></div></article><article><span class="metric-icon">◷</span><div><small>${live.length?"Live now":"Next kickoff"}</small><strong>${live.length?`${live.length} match${live.length>1?"es":""}`:upcoming[0]?escapeHtml(kickoff(upcoming[0].kickoff).date):"TBC"}</strong></div></article>`;
-  $("#standings").innerHTML=standings.map(row=>`<tr><td><span class="rank rank-${row.position}">${row.position}</span></td><td class="team-cell">${clubMark(row.team,row.logo)}<span>${escapeHtml(row.team)}</span></td><td>${row.played}</td><td>${row.won}</td><td>${row.drawn}</td><td>${row.lost}</td><td>${row.goalDifference>0?"+":""}${row.goalDifference}</td><td><strong>${row.points}</strong></td><td class="form-cell">${row.form.map(result=>`<span class="form form-${result.toLowerCase()}">${result}</span>`).join("")||"—"}</td></tr>`).join("");
+  if(isFaCup){
+    const stage=CUP_STAGES[currentCupStage(matches)]?.name??"Round of 16";
+    const clubs=new Set(matches.flatMap(match=>[match.home,match.away]).filter(team=>team&&team!=="TBC")).size;
+    $("#metrics").innerHTML=`<article><span class="metric-icon">🏆</span><div><small>Current stage</small><strong>${escapeHtml(stage)}</strong></div></article><article><span class="metric-icon">◆</span><div><small>Clubs</small><strong>${clubs}</strong></div></article><article><span class="metric-icon">✓</span><div><small>Matches played</small><strong>${completed.length}</strong></div></article><article><span class="metric-icon">◷</span><div><small>${live.length?"Live now":"Next kickoff"}</small><strong>${live.length?`${live.length} match${live.length>1?"es":""}`:upcoming[0]?escapeHtml(kickoff(upcoming[0].kickoff).date):"TBC"}</strong></div></article>`;
+    $("#cup-rounds").innerHTML=renderCupProgress(matches);
+  }else{
+    const standings=Array.isArray(state.standings)&&state.standings.length?state.standings:calculateStandings(matches);
+    const leaderLabel=completed.length?"League leader":"Season status";
+    const leaderValue=completed.length?(standings[0]?.team??"—"):(upcoming.length?"Opening round":"Pre-season");
+    $("#metrics").innerHTML=`<article><span class="metric-icon">⚽</span><div><small>${leaderLabel}</small><strong>${escapeHtml(leaderValue)}</strong></div></article><article><span class="metric-icon">▦</span><div><small>Matches played</small><strong>${completed.length}</strong></div></article><article><span class="metric-icon">⚽</span><div><small>Goals scored</small><strong>${goals}</strong></div></article><article><span class="metric-icon">◷</span><div><small>${live.length?"Live now":"Next kickoff"}</small><strong>${live.length?`${live.length} match${live.length>1?"es":""}`:upcoming[0]?escapeHtml(kickoff(upcoming[0].kickoff).date):"TBC"}</strong></div></article>`;
+    $("#standings").innerHTML=standings.map(row=>`<tr><td><span class="rank rank-${row.position}">${row.position}</span></td><td class="team-cell">${clubMark(row.team,row.logo)}<span>${escapeHtml(row.team)}</span></td><td>${row.played}</td><td>${row.won}</td><td>${row.drawn}</td><td>${row.lost}</td><td>${row.goalDifference>0?"+":""}${row.goalDifference}</td><td><strong>${row.points}</strong></td><td class="form-cell">${row.form.map(result=>`<span class="form form-${result.toLowerCase()}">${result}</span>`).join("")||"—"}</td></tr>`).join("");
+  }
   $("#results").innerHTML=completed.slice(0,4).map(matchCard).join("")||"<p class='notice'>No completed results yet.</p>";
   $("#fixtures").innerHTML=upcoming.slice(0,4).map(matchCard).join("")||"<p class='notice'>Fixtures will appear when announced.</p>";
   const news=Array.isArray(state.news)?state.news:[];
-  $("#news").innerHTML=news.slice(0,3).map(newsCard).join("")||"<p class='news-empty'>No official league updates are available right now.</p>";
+  $("#news").innerHTML=news.slice(0,3).map(newsCard).join("")||"<p class='news-empty'>No official competition updates are available right now.</p>";
   $("#updated").textContent=`Updated ${new Intl.DateTimeFormat("en-MY",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit",hour12:true,timeZone:"Asia/Kuala_Lumpur"}).format(new Date(state.updatedAt))} MYT · ${state.refreshNote??"Scores check every 30 seconds."}`;
   $("#source-link").href=state.sourceUrl??$("#source-link").href;
   $("#source-link").textContent=isA1?"Fixtures, venues & news: AFL ↗":`Source: ${state.source??"Official competition"} ↗`;

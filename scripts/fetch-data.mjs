@@ -1,10 +1,23 @@
 import {mkdir,writeFile} from "node:fs/promises";
 
-const competitionId="2393";
-const scheduleUrl=`https://hosted.dcd.shared.geniussports.com/embednf/MFL/en/competition/${competitionId}/schedule?phaseName=&poolNumber=0&matchType=REGULAR&roundNumber=-1&_cc=1&_nv=1&_mf=1`;
-const liveUrl=`https://hosted.dcd.shared.geniussports.com/ldata/football/competitions/comp${competitionId}.json`;
+const competitions={
+  league:{
+    competitionId:"2393",
+    output:"league.json",
+    season:"2026/27",
+    label:"Liga Super",
+    sourceUrl:"https://www.malaysianfootballleague.com/Home/Sport"
+  },
+  "fa-cup":{
+    competitionId:"2394",
+    output:"fa-cup.json",
+    season:"2026/27",
+    label:"Malaysia FA Cup",
+    sourceUrl:"https://www.malaysianfootballleague.com/Home/Sport?WHurl=%2Fcompetition%2F2394%2Fschedule",
+    newsKeyword:/\bPIALA\s+FA\b/i
+  }
+};
 const newsUrl="https://www.malaysianfootballleague.com/Content/Search/List";
-const sourceUrl="https://www.malaysianfootballleague.com/Home/Sport";
 
 const decode=(value="")=>String(value??"")
   .replace(/&#x([0-9a-f]+);/gi,(_,code)=>String.fromCodePoint(Number.parseInt(code,16)))
@@ -51,10 +64,20 @@ function mergeLive(matches,liveData){
   });
 }
 
-async function fetchMflNews(){
+async function fetchJson(url){
+  const response=await fetch(url,{headers:{Accept:"application/json","User-Agent":"MYSL Match Centre GitHub Pages Dashboard/1.0"},signal:AbortSignal.timeout(20000)});
+  if(!response.ok) throw new Error(`MFL feed returned ${response.status}`);
+  return response.json();
+}
+
+function scheduleUrl(competitionId,roundNumber=-1){
+  return `https://hosted.dcd.shared.geniussports.com/embednf/MFL/en/competition/${competitionId}/schedule?phaseName=&poolNumber=0&matchType=REGULAR&roundNumber=${roundNumber}&_cc=1&_nv=1&_mf=1`;
+}
+
+async function fetchMflNews(keyword){
   const body=new URLSearchParams({
     start:"0",
-    length:"6",
+    length:"20",
     "ExtraSearch[CategoryId]":"1",
     "ExtraSearch[ContentTypes][0]":"1",
     "ExtraSearch[OrderBy]":"1",
@@ -69,7 +92,9 @@ async function fetchMflNews(){
   });
   if(!response.ok) throw new Error(`MFL news returned ${response.status}`);
   const payload=await response.json();
-  return (Array.isArray(payload.data)?payload.data:[]).filter(item=>item.ContentId&&plainText(item.ContentTitle)).slice(0,3).map(item=>({
+  const items=(Array.isArray(payload.data)?payload.data:[]).filter(item=>item.ContentId&&plainText(item.ContentTitle));
+  const selected=keyword?items.filter(item=>keyword.test(`${plainText(item.ContentTitle)} ${plainText(item.ContentDesc)}`)):items;
+  return selected.slice(0,3).map(item=>({
     title:plainText(item.ContentTitle),
     excerpt:snippet(item.ContentDesc),
     date:new Date(`${item.PublishDate}Z`).toISOString(),
@@ -78,18 +103,23 @@ async function fetchMflNews(){
   }));
 }
 
-const response=await fetch(scheduleUrl,{headers:{Accept:"application/json","User-Agent":"MSL GitHub Pages Dashboard/1.0"}});
-if(!response.ok) throw new Error(`MFL schedule returned ${response.status}`);
-const payload=await response.json();
-let matches=parseMatches(payload.html??"");
-if(!matches.length) throw new Error("MFL schedule contained no fixtures");
-try{
-  const liveResponse=await fetch(liveUrl,{headers:{Accept:"application/json"}});
-  if(liveResponse.ok) matches=mergeLive(matches,await liveResponse.json());
-}catch(error){console.warn(`Live clock feed unavailable: ${error.message}`)}
-let news=[];
-try{news=await fetchMflNews()}catch(error){console.warn(`MFL news feed unavailable: ${error.message}`)}
+async function fetchCompetition(config){
+  const payload=await fetchJson(scheduleUrl(config.competitionId));
+  let matches=parseMatches(payload.html??"");
+  if(!matches.length) throw new Error(`${config.label} schedule contained no fixtures`);
+  try{
+    const liveData=await fetchJson(`https://hosted.dcd.shared.geniussports.com/ldata/football/competitions/comp${config.competitionId}.json`);
+    matches=mergeLive(matches,liveData);
+  }catch(error){console.warn(`${config.label} live clock feed unavailable: ${error.message}`)}
+  let news=[];
+  try{news=await fetchMflNews(config.newsKeyword)}catch(error){console.warn(`${config.label} news feed unavailable: ${error.message}`)}
 
-await mkdir(new URL("../site/data/",import.meta.url),{recursive:true});
-await writeFile(new URL("../site/data/league.json",import.meta.url),JSON.stringify({season:"2026/27",updatedAt:new Date().toISOString(),source:"Malaysian Football League",sourceUrl,news,matches},null,2)+"\n");
-console.log(`Saved ${matches.length} fixtures (${matches.filter(match=>match.status==="live").length} live) and ${news.length} MFL news updates.`);
+  await mkdir(new URL("../site/data/",import.meta.url),{recursive:true});
+  await writeFile(new URL(`../site/data/${config.output}`,import.meta.url),JSON.stringify({season:config.season,updatedAt:new Date().toISOString(),source:"Malaysian Football League",sourceUrl:config.sourceUrl,refreshNote:"Official scores check every 30 seconds; the full competition snapshot refreshes through GitHub Actions.",news,matches},null,2)+"\n");
+  console.log(`Saved ${matches.length} ${config.label} fixtures (${matches.filter(match=>match.status==="live").length} live) and ${news.length} MFL news updates.`);
+}
+
+const requested=process.argv[2];
+const selected=requested?[competitions[requested]]:Object.values(competitions);
+if(selected.some(config=>!config)) throw new Error(`Unknown competition "${requested}". Use league or fa-cup.`);
+for(const config of selected) await fetchCompetition(config);
