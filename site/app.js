@@ -269,25 +269,41 @@ function render(){
 
 async function refresh(silent=false){
   if(!silent) $("#refresh-status").innerHTML="<i></i>Checking official data…";
+  nextRefresh=Date.now()+REFRESH_MS;
+  let snapshotError=null;
   try{
-    const requests=[fetch(`${DATA_URL}?v=${Date.now()}`,{cache:"no-store"}).then(response=>{if(!response.ok) throw new Error("Snapshot unavailable");return response.json()})];
-    if(SCHEDULE_URL) requests.push(fetch(`${SCHEDULE_URL}&_=${Date.now()}`,{cache:"no-store"}).then(response=>{if(!response.ok) throw new Error("MFL unavailable");return response.json()}));
-    if(isA1) requests.push(fetchA1Live());
-    const [snapshot,scheduleOrLive]=await Promise.allSettled(requests);
-    if(snapshot.status==="fulfilled"&&(!state||new Date(snapshot.value.updatedAt)>=new Date(state.updatedAt))) state=snapshot.value;
-    if(!state) throw new Error("No verified data is available yet");
-    if(!isA1&&scheduleOrLive?.status==="fulfilled") state={...state,matches:mergeSchedule(state.matches,parseOfficialSchedule(scheduleOrLive.value))};
-    if(isA1&&scheduleOrLive?.status==="fulfilled"){
-      const matches=mergeA1Matches(state.matches,scheduleOrLive.value.matches);
-      const standings=parseSofaStandings(scheduleOrLive.value.standings,matches);
-      state={...state,matches,standings:standings.length?standings:state.standings,liveUpdatedAt:new Date().toISOString()};
-    }
+    const response=await fetch(`${DATA_URL}?v=${Date.now()}`,{cache:"no-store"});
+    if(!response.ok) throw new Error("Snapshot unavailable");
+    const snapshot=await response.json();
+    if(!state||new Date(snapshot.updatedAt)>=new Date(state.updatedAt)) state=snapshot;
     $("#notice").hidden=true;
     render();
   }catch(error){
+    snapshotError=error;
+    if(!state){
+      $("#notice").hidden=false;
+      $("#notice").textContent=error.message;
+      return;
+    }
     $("#notice").hidden=false;
-    $("#notice").textContent=state?"The official feed is temporarily unavailable. Showing the last verified snapshot.":error.message;
+    $("#notice").textContent="The latest snapshot is temporarily unavailable. Showing the last verified data.";
+    render();
   }
+
+  try{
+    if(SCHEDULE_URL){
+      const response=await fetch(`${SCHEDULE_URL}&_=${Date.now()}`,{cache:"no-store"});
+      if(!response.ok) throw new Error("MFL unavailable");
+      state={...state,matches:mergeSchedule(state.matches,parseOfficialSchedule(await response.json()))};
+    }else if(isA1){
+      const liveUpdate=await fetchA1Live();
+      const matches=mergeA1Matches(state.matches,liveUpdate.matches);
+      const standings=parseSofaStandings(liveUpdate.standings,matches);
+      state={...state,matches,standings:standings.length?standings:state.standings,liveUpdatedAt:new Date().toISOString()};
+    }
+    if(!snapshotError) $("#notice").hidden=true;
+    render();
+  }catch{}
   nextRefresh=Date.now()+REFRESH_MS;
 }
 
