@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#09110f">
-  <meta name="description" content="Latest Liga A1 Semi-Pro standings, results, fixtures and news from the official Amateur Football League source.">
+  <meta name="description" content="Latest Liga A1 Semi-Pro standings, results, fixtures and official Amateur Football League news.">
   <meta property="og:title" content="Liga A1 Semi-Pro Match Centre">
   <meta property="og:description" content="Official standings, results, upcoming Liga A1 fixtures and league updates.">
   <meta property="og:image" content="../og.png">
@@ -23,18 +23,18 @@
   </header>
   <main class="dashboard">
     <section class="intro">
-      <div><p class="eyebrow"><i></i>Official AFL competition data</p><h1>Liga A1 Semi-Pro</h1><p>League standings, latest results and upcoming fixtures from official AFL data.</p></div>
+      <div><p class="eyebrow"><i></i>Source-backed competition data</p><h1>Liga A1 Semi-Pro</h1><p>Official AFL fixtures and news with published standings and score updates.</p></div>
       <div class="refresh-control"><span id="refresh-status" class="auto-status"><i></i>Loading official data…</span><button id="refresh" type="button" aria-label="Refresh data now">↻ <span>Refresh now</span></button></div>
     </section>
     <div id="notice" class="notice" hidden></div>
     <section id="live-board" class="live-board" aria-label="Matches live now" hidden>
-      <div class="live-title"><span><i></i>LIVE NOW</span><p>Shown only when verified by the official source</p></div>
+      <div class="live-title"><span><i></i>LIVE NOW</span><p>Live score and match status supplied by Sofascore</p></div>
       <div id="live-grid" class="live-grid"></div>
     </section>
     <section id="metrics" class="metrics" aria-label="League summary"></section>
     <section class="content-grid">
       <article class="panel standings-panel">
-        <div class="panel-heading"><div><span>TABLE</span><h2>League standings</h2></div><p>Calculated from official completed fixtures</p></div>
+        <div class="panel-heading"><div><span>TABLE</span><h2>League standings</h2></div><p>Published standings and verified results</p></div>
         <div id="standings-table" class="table-scroll"><table><thead><tr><th>#</th><th class="team-column">Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th class="form-column">Form</th></tr></thead><tbody id="standings"></tbody></table></div>
         <div id="standings-legend" class="legend"><span><i class="champion"></i>League leader</span></div>
       </article>
@@ -47,7 +47,7 @@
       <div class="panel-heading"><div><span>NEWS</span><h2 id="news-heading">Latest league updates</h2></div><p>Short updates from the official AFL source</p></div>
       <div id="news" class="news-grid"></div>
     </section>
-    <footer><p id="updated">Loading latest update…</p><a id="source-link" href="https://the-afl.my/" target="_blank" rel="noreferrer">Source: Amateur Football League ↗</a></footer>
+    <footer><p id="updated">Loading latest update…</p><div class="source-links"><a id="source-link" href="https://the-afl.my/" target="_blank" rel="noreferrer">Fixtures, venues &amp; news: AFL ↗</a><a href="https://www.sofascore.com/football/tournament/malaysia/liga-a1/22740" target="_blank" rel="noreferrer">Live scores &amp; standings: Sofascore ↗</a><a href="https://footystats.org/malaysia/liga-a1" target="_blank" rel="noreferrer">Result fallback: FootyStats ↗</a></div></footer>
   </main>
   <noscript><div class="noscript">JavaScript is required to load the latest competition data.</div></noscript>
   <script src="../app.js" defer></script>

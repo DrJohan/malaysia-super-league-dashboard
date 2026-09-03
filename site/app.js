@@ -2,13 +2,89 @@ const competition=document.documentElement.dataset.competition??"msl";
 const isA1=competition==="a1";
 const SCHEDULE_URL=isA1?null:"https://hosted.dcd.shared.geniussports.com/embednf/MFL/en/competition/2393/schedule?phaseName=&poolNumber=0&matchType=REGULAR&roundNumber=-1&_cc=1&_nv=1&_mf=1";
 const DATA_URL=isA1?"../data/a1.json":"./data/league.json";
-const REFRESH_MS=isA1?300000:30000;
+const SOFA_BASES=["https://www.sofascore.com/api/v1","https://api.sofascore.com/api/v1"];
+const SOFA_TOURNAMENT=22740;
+const SOFA_SEASON=100870;
+const REFRESH_MS=30000;
+const A1_TEAMS=["AAK UNISEL FC","ARMED FORCES FC","BUNGA RAYA FC","IMIGRESEN FC II","JDT II","KEDAH FA","KELANTAN CITY FC","MANJUNG CITY FC","MALAYSIAN UNIVERSITY – UiTM","NEGERI SEMBILAN FC II","PERAK FA","SELANGOR FC II","UM – DAMANSARA UNITED","USM FC"];
+const A1_TEAM_NAMES=new Map(A1_TEAMS.map(team=>[team.toUpperCase(),team]));
 let state=null;
 let nextRefresh=Date.now()+REFRESH_MS;
 
 const $=selector=>document.querySelector(selector);
 const escapeHtml=value=>String(value??"").replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
 const score=value=>Number.isFinite(value)?value:"–";
+
+function canonicalTeam(value){
+  const name=String(value??"").trim().replace(/\s*-\s*/g," – ");
+  const aliases={
+    "AAK PUNCAK ALAM FC":"AAK UNISEL FC","ATM":"ARMED FORCES FC","ATM FA":"ARMED FORCES FC","JDT U23":"JDT II","JOHOR DARUL TAZIM II":"JDT II","JOHOR DARUL TA'ZIM II":"JDT II","JOHOR DARUL TA'ZIM U23":"JDT II","KFA":"KEDAH FA","KELANTAN WTS":"KELANTAN CITY FC","KELANTAN WTS FC":"KELANTAN CITY FC","WAN TENDONG STABLE":"KELANTAN CITY FC","WTS":"KELANTAN CITY FC","MALAYSIA UNIVERSITY":"MALAYSIAN UNIVERSITY – UiTM","MALAYSIAN UNIVERSITY – UITM":"MALAYSIAN UNIVERSITY – UiTM","NEGERI SEMBILAN II":"NEGERI SEMBILAN FC II","PERAK":"PERAK FA","SELANGOR U23":"SELANGOR FC II","STAR CITY FC II":"IMIGRESEN FC II"
+  };
+  const key=name.toUpperCase();
+  return aliases[key]??A1_TEAM_NAMES.get(key)??name;
+}
+
+function sofaScore(score){
+  for(const key of ["current","normaltime","display","period2","period1"]) if(Number.isFinite(score?.[key])) return Number(score[key]);
+  return null;
+}
+
+function sofaMatchStatus(event){
+  const type=String(event?.status?.type??"").toLowerCase();
+  if(["finished","afterpenalties","afterextra"].includes(type)) return "complete";
+  if(["inprogress","live"].includes(type)) return "live";
+  if(["postponed","canceled","cancelled"].includes(type)) return "postponed";
+  return "scheduled";
+}
+
+function sofaLiveClock(event){
+  const description=String(event?.status?.description??event?.status?.period??"");
+  const halfTime=/half.?time|period break/i.test(description);
+  const initial=Number(event?.time?.initial??0),start=Number(event?.time?.currentPeriodStartTimestamp);
+  const elapsed=Number.isFinite(start)?Math.max(0,Math.floor(Date.now()/1000-start)):0;
+  const total=Math.max(0,initial+(halfTime?0:elapsed));
+  return {liveLabel:halfTime?"Half-time":"Live",liveStatus:halfTime?"PERIODBREAK":"IN_PROGRESS",livePeriod:/2nd|second/i.test(description)||initial>=2700?2:1,liveClock:`${Math.floor(total/60)}:${String(total%60).padStart(2,"0")}`,liveClockRunning:!halfTime,clockUpdatedAt:new Date().toISOString()};
+}
+
+function parseSofaEvents(payload){
+  return (Array.isArray(payload?.events)?payload.events:[]).map(event=>{
+    const status=sofaMatchStatus(event),timestamp=Number(event?.startTimestamp)*1000;
+    return {id:`sofa-${event.id}`,sofaId:event.id,status,kickoff:Number.isFinite(timestamp)?new Date(timestamp).toISOString():"",venue:event?.venue?.stadium?.name??event?.venue?.name??"",home:canonicalTeam(event?.homeTeam?.name),away:canonicalTeam(event?.awayTeam?.name),homeScore:sofaScore(event?.homeScore),awayScore:sofaScore(event?.awayScore),homeLogo:event?.homeTeam?.id?`https://api.sofascore.app/api/v1/team/${event.homeTeam.id}/image`:"",awayLogo:event?.awayTeam?.id?`https://api.sofascore.app/api/v1/team/${event.awayTeam.id}/image`:"",...(status==="live"?sofaLiveClock(event):{})};
+  }).filter(match=>match.home&&match.away&&match.kickoff);
+}
+
+function a1MatchKey(match){return `${canonicalTeam(match.home).toUpperCase()}|${canonicalTeam(match.away).toUpperCase()}|${match.kickoff.slice(0,10)}`}
+
+function mergeA1Matches(matches,updates){
+  const merged=new Map(matches.map(match=>[a1MatchKey(match),match]));
+  for(const update of updates){
+    const key=a1MatchKey(update),existing=merged.get(key);
+    merged.set(key,{...existing,...update,id:existing?.id??update.id,venue:existing?.venue||update.venue,homeLogo:existing?.homeLogo||update.homeLogo,awayLogo:existing?.awayLogo||update.awayLogo});
+  }
+  const normalized=[...merged.values()].map(match=>({...match,home:canonicalTeam(match.home),away:canonicalTeam(match.away)}));
+  const completed=normalized.filter(match=>match.status==="complete");
+  return normalized.filter(match=>match.status!=="scheduled"||!completed.some(result=>result.home===match.home&&result.away===match.away&&Math.abs(Date.parse(result.kickoff)-Date.parse(match.kickoff))<=36*60*60*1000)).sort((a,b)=>a.kickoff.localeCompare(b.kickoff));
+}
+
+function parseSofaStandings(payload,matches){
+  const rows=(Array.isArray(payload?.standings)?payload.standings:[]).flatMap(group=>Array.isArray(group?.rows)?group.rows:[]);
+  const logos=new Map(matches.flatMap(match=>[[match.home,match.homeLogo],[match.away,match.awayLogo]]));
+  return rows.map(row=>{const team=canonicalTeam(row?.team?.name),goalsFor=Number(row?.scoresFor??0),goalsAgainst=Number(row?.scoresAgainst??0);return {team,logo:logos.get(team)||(row?.team?.id?`https://api.sofascore.app/api/v1/team/${row.team.id}/image`:""),played:Number(row?.matches??0),won:Number(row?.wins??0),drawn:Number(row?.draws??0),lost:Number(row?.losses??0),goalsFor,goalsAgainst,points:Number(row?.points??0),goalDifference:Number(row?.scoreDiff??goalsFor-goalsAgainst),position:Number(row?.position??999),form:[]}}).filter(row=>row.team&&row.position<999).sort((a,b)=>a.position-b.position);
+}
+
+async function fetchSofa(path){
+  let lastError;
+  for(const base of SOFA_BASES){
+    try{const response=await fetch(`${base}${path}?_=${Date.now()}`,{cache:"no-store"});if(!response.ok) throw new Error(`HTTP ${response.status}`);return await response.json()}catch(error){lastError=error}
+  }
+  throw lastError??new Error("Sofascore unavailable");
+}
+
+async function fetchA1Live(){
+  const root=`/unique-tournament/${SOFA_TOURNAMENT}/season/${SOFA_SEASON}`;
+  const [previous,upcoming,standings]=await Promise.all([fetchSofa(`${root}/events/last/0`),fetchSofa(`${root}/events/next/0`),fetchSofa(`${root}/standings/total`)]);
+  return {matches:parseSofaEvents({events:[...(previous.events??[]),...(upcoming.events??[])]}),standings};
+}
 
 function statusFromClass(className){
   if(className.includes("COMPLETE")) return "complete";
@@ -90,7 +166,7 @@ function currentClock(match){
   if(match.liveLabel==="Half-time"||match.liveStatus==="PERIODBREAK") return {time:"HT",period:"Half-time"};
   const base=clockSeconds(match.liveClock);
   if(base===null) return {time:match.liveLabel??"LIVE",period:periodLabel(match.livePeriod)};
-  const since=Math.max(0,Math.floor((Date.now()-new Date(state.updatedAt).getTime())/1000));
+  const since=Math.max(0,Math.floor((Date.now()-new Date(match.clockUpdatedAt??state.updatedAt).getTime())/1000));
   const total=base+(match.liveClockRunning?since:0);
   return {time:`${Math.floor(total/60)}:${String(total%60).padStart(2,"0")}`,period:periodLabel(match.livePeriod)};
 }
@@ -141,7 +217,7 @@ function render(){
   $("#news").innerHTML=news.slice(0,3).map(newsCard).join("")||"<p class='news-empty'>No official league updates are available right now.</p>";
   $("#updated").textContent=`Updated ${new Intl.DateTimeFormat("en-MY",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit",hour12:true,timeZone:"Asia/Kuala_Lumpur"}).format(new Date(state.updatedAt))} MYT · ${state.refreshNote??"Scores check every 30 seconds."}`;
   $("#source-link").href=state.sourceUrl??$("#source-link").href;
-  $("#source-link").textContent=`Source: ${state.source??"Official competition"} ↗`;
+  $("#source-link").textContent=isA1?"Fixtures, venues & news: AFL ↗":`Source: ${state.source??"Official competition"} ↗`;
   $("#refresh-status").classList.toggle("is-live",live.length>0);
   renderClocks();
 }
@@ -151,10 +227,16 @@ async function refresh(silent=false){
   try{
     const requests=[fetch(`${DATA_URL}?v=${Date.now()}`,{cache:"no-store"}).then(response=>{if(!response.ok) throw new Error("Snapshot unavailable");return response.json()})];
     if(SCHEDULE_URL) requests.push(fetch(`${SCHEDULE_URL}&_=${Date.now()}`,{cache:"no-store"}).then(response=>{if(!response.ok) throw new Error("MFL unavailable");return response.json()}));
-    const [snapshot,schedule]=await Promise.allSettled(requests);
+    if(isA1) requests.push(fetchA1Live());
+    const [snapshot,scheduleOrLive]=await Promise.allSettled(requests);
     if(snapshot.status==="fulfilled"&&(!state||new Date(snapshot.value.updatedAt)>=new Date(state.updatedAt))) state=snapshot.value;
     if(!state) throw new Error("No verified data is available yet");
-    if(schedule?.status==="fulfilled") state={...state,matches:mergeSchedule(state.matches,parseOfficialSchedule(schedule.value))};
+    if(!isA1&&scheduleOrLive?.status==="fulfilled") state={...state,matches:mergeSchedule(state.matches,parseOfficialSchedule(scheduleOrLive.value))};
+    if(isA1&&scheduleOrLive?.status==="fulfilled"){
+      const matches=mergeA1Matches(state.matches,scheduleOrLive.value.matches);
+      const standings=parseSofaStandings(scheduleOrLive.value.standings,matches);
+      state={...state,matches,standings:standings.length?standings:state.standings,liveUpdatedAt:new Date().toISOString()};
+    }
     $("#notice").hidden=true;
     render();
   }catch(error){

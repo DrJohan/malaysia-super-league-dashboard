@@ -714,6 +714,13 @@ footer a {
   color: #91a59f;
   text-decoration: none;
 }
+.source-links {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 .noscript {
   padding: 20px;
   color: white;
@@ -830,6 +837,11 @@ footer a {
     align-items: flex-start;
     flex-direction: column;
     padding: 20px 2px;
+  }
+  .source-links {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
   }
   .live-grid {
     grid-template-columns: 1fr;

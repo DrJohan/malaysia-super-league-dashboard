@@ -3,14 +3,14 @@
 A static, mobile-friendly Malaysian football dashboard designed for GitHub Pages. It has separate match-centre pages for Liga Super and Liga A1 Semi-Pro.
 
 - Liga Super: standings, live scores, running match clock, recent results, upcoming fixtures and short official MFL news updates.
-- Liga A1 Semi-Pro: an MSL-style league table calculated from official completed fixtures, plus current-season results, upcoming fixtures and short official AFL news updates.
+- Liga A1 Semi-Pro: a current league table, recent results, upcoming fixtures, live-score checks and short official AFL news updates.
 
 ## How updates work
 
-- The browser checks the official schedule every 30 seconds for score and match-status changes.
+- The Liga Super page checks the official schedule every 30 seconds for score and match-status changes.
 - GitHub Actions refreshes the full official snapshot and live-clock anchor every five minutes.
 - The visible match clock continues ticking between snapshots and re-synchronises at the next deployment.
-- The A1 page refreshes from the official AFL website every five minutes and retains earlier verified results from the deployed snapshot so its calculated table remains cumulative. A1 live clocks are shown only if a verified official feed becomes available.
+- The A1 page checks Sofascore's published A1 feed every 30 seconds in the browser. GitHub Actions also combines official AFL fixtures and news with published standings and completed-result fallbacks, so delayed GitHub schedules do not leave the page stuck on its opening snapshot.
 - Each league page shows the three newest updates from its official source, with a short excerpt and a link to the original article. These refresh as part of the same five-minute GitHub Actions deployment.
 - Scheduled GitHub Actions runs may occasionally be delayed by GitHub; the page preserves the most recent verified snapshot.
 
@@ -30,4 +30,4 @@ The A1 page is:
 
 ## Data source
 
-Liga Super data is retrieved from the Malaysian Football League's official Genius Sports-powered schedule and live-data feeds. Liga A1 data is retrieved from the official Amateur Football League website. This independent dashboard is not affiliated with or endorsed by MFL or AFL.
+Liga Super data is retrieved from the Malaysian Football League's official Genius Sports-powered schedule and live-data feeds. Liga A1 fixtures and news are retrieved from the official Amateur Football League website; score and standings updates use Sofascore with a FootyStats completed-result fallback. This independent dashboard is not affiliated with or endorsed by MFL, AFL, Sofascore or FootyStats.
